@@ -537,15 +537,18 @@ function setup(){
       }
       else if(d3.event.keyCode == 13) { //press enter
 
+        if(typeof $(".line") !== 'undefined') {
+          $(".line").remove();
+        }
+        var enemy = $("circle").first();
         /*
         * get first circle coordinates
         * */
-        var enemyCx = $("circle").first().attr("cx");
-        var enemyCy = $("circle").first().attr("cy");
+        var enemyCx = enemy.attr("cx");
+        var enemyCy = enemy.attr("cy");
 
-        console.log('Enemy cx: ' + enemyCx + ' and enemy cy: ' + enemyCy);
-
-        var lineData = [ {"x": 250, "y": 255}, {"x": enemyCx, "y": enemyCy}];
+        var lineData = [ {"x": 250, "y": 255},
+                         {"x": enemyCx, "y": enemyCy}];
 
         var lineFunction = d3.svg.line()
                                 .x(function(d) { return d.x; })
@@ -553,10 +556,15 @@ function setup(){
                                 .interpolate("linear");
 
         var lineGraph = svg.append("path")
-                                    .attr("d", lineFunction(lineData))
-                                    .attr("stroke", "red")
-                                    .attr("stroke-width", 2)
-                                    .attr("fill", "none");
+                                .attr("class", "line")
+                                .attr("d", lineFunction(lineData))
+                                .attr("stroke", "red")
+                                .attr("stroke-width", 2)
+                                .attr("fill", "none");
+
+        // blow up
+        enemy.remove();
+
       }
       
     })
