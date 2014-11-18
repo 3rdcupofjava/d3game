@@ -535,6 +535,47 @@ function setup(){
         }
         
       }
+      else if(d3.event.keyCode == 13) { //press enter
+
+        if(typeof $(".line") !== 'undefined') {
+          $(".line").remove();
+        }
+        var enemy = $("circle").first();
+        /*
+        * get first circle coordinates
+        * */
+        var enemyCx = enemy.attr("cx");
+        var enemyCy = enemy.attr("cy");
+
+        var lineData = [ {"x": 250, "y": 255},
+                         {"x": enemyCx, "y": enemyCy}];
+
+        var lineFunction = d3.svg.line()
+                                .x(function(d) { return d.x; })
+                                .y(function(d) { return d.y; })
+                                .interpolate("linear");
+
+        var lineGraph = svg.append("path")
+                                .attr("class", "line")
+                                .attr("d", lineFunction(lineData))
+                                .attr("stroke", "red")
+                                .attr("stroke-width", 2)
+                                .attr("fill", "none");
+
+        // it cheat with health...
+        if(enemy.attr("fill") === '#1f77b4') {
+          game_status.health[0] +=parseInt(enemy.attr("r"));
+        }
+        if(enemy.attr("fill") === '#aec7e8') {
+          game_status.health[1] +=parseInt(enemy.attr("r"));
+        }
+        if(enemy.attr("fill") === '#ff7f0e') {
+          game_status.health[2] +=parseInt(enemy.attr("r"));
+        }
+
+        enemy.remove();
+
+      }
       
     })
     .on("keyup", function(){
