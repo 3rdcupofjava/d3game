@@ -562,7 +562,17 @@ function setup(){
                                 .attr("stroke-width", 2)
                                 .attr("fill", "none");
 
-        // blow up
+        // it cheat with health...
+        if(enemy.attr("fill") === '#1f77b4') {
+          game_status.health[0] +=enemy.attr("r");
+        }
+        if(enemy.attr("fill") === '#aec7e8') {
+          game_status.health[1] +=enemy.attr("r");
+        }
+        if(enemy.attr("fill") === '#ff7f0e') {
+          game_status.health[2] +=enemy.attr("r");
+        }
+
         enemy.remove();
 
       }
