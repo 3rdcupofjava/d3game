@@ -535,6 +535,29 @@ function setup(){
         }
         
       }
+      else if(d3.event.keyCode == 13) { //press enter
+
+        /*
+        * get first circle coordinates
+        * */
+        var enemyCx = $("circle").first().attr("cx");
+        var enemyCy = $("circle").first().attr("cy");
+
+        console.log('Enemy cx: ' + enemyCx + ' and enemy cy: ' + enemyCy);
+
+        var lineData = [ {"x": 250, "y": 255}, {"x": enemyCx, "y": enemyCy}];
+
+        var lineFunction = d3.svg.line()
+                                .x(function(d) { return d.x; })
+                                .y(function(d) { return d.y; })
+                                .interpolate("linear");
+
+        var lineGraph = svg.append("path")
+                                    .attr("d", lineFunction(lineData))
+                                    .attr("stroke", "red")
+                                    .attr("stroke-width", 2)
+                                    .attr("fill", "none");
+      }
       
     })
     .on("keyup", function(){
