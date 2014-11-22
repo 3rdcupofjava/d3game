@@ -562,7 +562,10 @@ function setup(){
                                 .attr("stroke-width", 2)
                                 .attr("fill", "none");
 
+
         // it cheat with health...
+        // this part is buggy, may need a better solution
+        /*
         if(enemy.attr("fill") === '#1f77b4') {
           game_status.health[0] +=parseInt(enemy.attr("r"));
         }
@@ -572,9 +575,23 @@ function setup(){
         if(enemy.attr("fill") === '#ff7f0e') {
           game_status.health[2] +=parseInt(enemy.attr("r"));
         }
+        */
 
         enemy.remove();
 
+        d3.select("body").on("keyup",function(){
+             if(typeof $(".line") !== 'undefined') {
+              $(".line").remove();
+            }
+
+            if(d3.event.keyCode == 37){
+              control_status.rotate = 0;
+            }
+            else if(d3.event.keyCode == 39){
+              control_status.rotate = 0;
+            }
+          });
+          
       }
       
     })
