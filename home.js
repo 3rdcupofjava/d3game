@@ -540,9 +540,10 @@ function setup(){
         if(typeof $(".line") !== 'undefined') {
           $(".line").remove();
         }
+        //pure js except jquery, last have issue and transform 'D' attribute in lowercase
         var enemy = document.getElementsByClassName("enemy")[0];
         /*
-        * get first circle coordinates
+        * show line
         * */
         var enemyCx = enemy.cx.baseVal.value;
         var enemyCy = enemy.cy.baseVal.value;
@@ -561,13 +562,16 @@ function setup(){
                                 .attr("stroke", "red")
                                 .attr("stroke-width", 2)
                                 .attr("fill", "none");
+        /* end of line logic */
 
-        enemy.setAttribute("D", true);
+        enemy.setAttribute("D", true); // ask this in comment (103 str of this code)
 
-        var element = d3.select('circle');
+        var element = d3.select('circle'); //d3 selector for explosion and removing element
 
+        // explosion animation and remove element
         element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
 
+        // get enemy radius and increase score
         var radius = $('circle').first().attr('r');
         game_status.score += (radius*game_status.multiplier);
         updateScore(radius);
