@@ -541,7 +541,6 @@ function setup(){
           $(".line").remove();
         }
         var enemy = document.getElementsByClassName("enemy")[0];
-        console.log(enemy);
         /*
         * get first circle coordinates
         * */
@@ -563,25 +562,11 @@ function setup(){
                                 .attr("stroke-width", 2)
                                 .attr("fill", "none");
 
+        enemy.setAttribute("D", true);
 
-        // it cheat with health...
-        // this part is buggy, may need a better solution
-        /*
-        if(enemy.attr("fill") === '#1f77b4') {
-          game_status.health[0] +=parseInt(enemy.attr("r"));
-        }
-        if(enemy.attr("fill") === '#aec7e8') {
-          game_status.health[1] +=parseInt(enemy.attr("r"));
-        }
-        if(enemy.attr("fill") === '#ff7f0e') {
-          game_status.health[2] +=parseInt(enemy.attr("r"));
-        }
-        */
+        var element = d3.select('circle');
 
-        enemy
-            .setAttribute("D", true)
-            .setAttribute("opacity", "0");
-        enemy.remove();
+        element.attr("fill-opacity","100%").transition().duration(100).attr("r",0).attr("fill-opacity","50%").remove();
 
         d3.select("body").on("keyup",function(){
              if(typeof $(".line") !== 'undefined') {
