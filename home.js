@@ -40,6 +40,30 @@ var control_status ={
   rotation:0 //0-> do nothing, -1 rotate left, 1 rotate right
 }
 
+var playSound = {
+  go : function() {
+    var audioElement = document.createElement('audio');
+    audioElement.setAttribute('src', 'http://soundbible.com/mp3/Punch_HD-Mark_DiAngelo-1718986183.mp3');
+    //audioElement.setAttribute('autoplay', 'autoplay');
+    audioElement.load();
+    $.get();
+    audioElement.addEventListener("load", function() {
+      audioElement.play();
+    }, true);
+
+    audioElement.play();
+
+    /* uncomment it and add to view buttons play / pause for controls
+     $('.play').click(function() {
+     audioElement.play();
+     });
+     $('.pause').click(function() {
+     audioElement.pause();
+     });
+     */
+
+  }
+};
 //----------------------------------------------------------------------------
 
 var arc = d3.svg.arc()
@@ -570,6 +594,7 @@ function setup(){
 
         // explosion animation and remove element
         element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
+        playSound.go();
 
         // get enemy radius and increase score
         var radius = $('circle').first().attr('r');
