@@ -568,6 +568,10 @@ function setup(){
 
         element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
 
+        var radius = $('circle').first().attr('r');
+        game_status.score += (radius*game_status.multiplier);
+        updateScore(radius);
+
         d3.select("body").on("keyup",function(){
              if(typeof $(".line") !== 'undefined') {
               $(".line").remove();
