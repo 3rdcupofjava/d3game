@@ -576,6 +576,9 @@ function setup(){
         game_status.score += (radius*game_status.multiplier);
         updateScore(radius);
 
+        /*
+        * this part remove line after shot.
+        * */
         d3.select("body").on("keyup",function(){
              if(typeof $(".line") !== 'undefined') {
               $(".line").remove();
