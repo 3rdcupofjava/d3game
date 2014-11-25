@@ -566,7 +566,7 @@ function setup(){
 
         var element = d3.select('circle');
 
-        element.attr("fill-opacity","100%").transition().duration(100).attr("r",0).attr("fill-opacity","50%").remove();
+        element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
 
         d3.select("body").on("keyup",function(){
              if(typeof $(".line") !== 'undefined') {
