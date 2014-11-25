@@ -40,6 +40,30 @@ var control_status ={
   rotation:0 //0-> do nothing, -1 rotate left, 1 rotate right
 }
 
+var playSound = {
+  go : function() {
+    var audioElement = document.createElement('audio');
+    audioElement.setAttribute('src', 'http://soundbible.com/mp3/Punch_HD-Mark_DiAngelo-1718986183.mp3');
+    //audioElement.setAttribute('autoplay', 'autoplay');
+    audioElement.load();
+    $.get();
+    audioElement.addEventListener("load", function() {
+      audioElement.play();
+    }, true);
+
+    audioElement.play();
+
+    /* uncomment it and add to view buttons play / pause for controls
+     $('.play').click(function() {
+     audioElement.play();
+     });
+     $('.pause').click(function() {
+     audioElement.pause();
+     });
+     */
+
+  }
+};
 //----------------------------------------------------------------------------
 
 var arc = d3.svg.arc()
@@ -111,7 +135,7 @@ function tickTween(d,i){
 function generateDots(svg){
   enemies =[
     generatePointOnCircle(Math.round(Math.random()*360),width)
-  ]
+  ];
 
   $(enemies).each(function(i,d){
     d.r = Math.round(Math.random()*10)+5;
@@ -540,12 +564,13 @@ function setup(){
         if(typeof $(".line") !== 'undefined') {
           $(".line").remove();
         }
-        var enemy = $("circle").first();
+        //pure js except jquery, last have issue and transform 'D' attribute in lowercase
+        var enemy = document.getElementsByClassName("enemy")[0];
         /*
-        * get first circle coordinates
+        * show line
         * */
-        var enemyCx = enemy.attr("cx");
-        var enemyCy = enemy.attr("cy");
+        var enemyCx = enemy.cx.baseVal.value;
+        var enemyCy = enemy.cy.baseVal.value;
 
         var lineData = [ {"x": 250, "y": 255},
                          {"x": enemyCx, "y": enemyCy}];
@@ -561,24 +586,24 @@ function setup(){
                                 .attr("stroke", "red")
                                 .attr("stroke-width", 2)
                                 .attr("fill", "none");
+        /* end of line logic */
 
+        enemy.setAttribute("D", true); // ask this in comment (103 str of this code)
 
-        // it cheat with health...
-        // this part is buggy, may need a better solution
+        var element = d3.select('circle'); //d3 selector for explosion and removing element
+
+        // explosion animation and remove element
+        element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
+        playSound.go();
+
+        // get enemy radius and increase score
+        var radius = $('circle').first().attr('r');
+        game_status.score += (radius*game_status.multiplier);
+        updateScore(radius);
+
         /*
-        if(enemy.attr("fill") === '#1f77b4') {
-          game_status.health[0] +=parseInt(enemy.attr("r"));
-        }
-        if(enemy.attr("fill") === '#aec7e8') {
-          game_status.health[1] +=parseInt(enemy.attr("r"));
-        }
-        if(enemy.attr("fill") === '#ff7f0e') {
-          game_status.health[2] +=parseInt(enemy.attr("r"));
-        }
-        */
-
-        enemy.remove();
-
+        * this part remove line after shot.
+        * */
         d3.select("body").on("keyup",function(){
              if(typeof $(".line") !== 'undefined') {
               $(".line").remove();
