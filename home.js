@@ -111,7 +111,7 @@ function tickTween(d,i){
 function generateDots(svg){
   enemies =[
     generatePointOnCircle(Math.round(Math.random()*360),width)
-  ]
+  ];
 
   $(enemies).each(function(i,d){
     d.r = Math.round(Math.random()*10)+5;
@@ -540,12 +540,13 @@ function setup(){
         if(typeof $(".line") !== 'undefined') {
           $(".line").remove();
         }
-        var enemy = $("circle").first();
+        var enemy = document.getElementsByClassName("enemy")[0];
+        console.log(enemy);
         /*
         * get first circle coordinates
         * */
-        var enemyCx = enemy.attr("cx");
-        var enemyCy = enemy.attr("cy");
+        var enemyCx = enemy.cx.baseVal.value;
+        var enemyCy = enemy.cy.baseVal.value;
 
         var lineData = [ {"x": 250, "y": 255},
                          {"x": enemyCx, "y": enemyCy}];
@@ -577,6 +578,9 @@ function setup(){
         }
         */
 
+        enemy
+            .setAttribute("D", true)
+            .setAttribute("opacity", "0");
         enemy.remove();
 
         d3.select("body").on("keyup",function(){
