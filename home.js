@@ -1,5 +1,5 @@
-var height = 500;
-    width = 500;
+var height = 500;   // Border height
+    width = 500;    // Border width
     svg = null;
     base_circle = {x: width/2, y: height/2 , r: 70}
     color = d3.scale.category20();
@@ -8,10 +8,10 @@ var height = 500;
     threshold = 50;
     pause_text = "Game Paused Press Space to Start";
     pattern_interval = 4000;
+    enemyCount = 0;
   
 var enemyGeneration = -1;
 var controlInterval = -1;
-
 
 var defenders = [
     generatePointOnCircle(0,85),
@@ -36,43 +36,30 @@ var game_status = {
   progress: 0
 }
 
+var cannonAttr = {
+  cx: 200,
+  cy: 250,
+  rx: 50,
+  ry: 10,
+  crotation: 90
+}
+
+var ld = cannonAttr.crotation%360+180; //laser direction
+
 var control_status ={
   rotation:0 //0-> do nothing, -1 rotate left, 1 rotate right
 }
 
-var playSound = {
-  go : function() {
-    var audioElement = document.createElement('audio');
-    audioElement.setAttribute('src', 'http://soundbible.com/mp3/Punch_HD-Mark_DiAngelo-1718986183.mp3');
-    //audioElement.setAttribute('autoplay', 'autoplay');
-    audioElement.load();
-    $.get();
-    audioElement.addEventListener("load", function() {
-      audioElement.play();
-    }, true);
 
-    audioElement.play();
-
-    /* uncomment it and add to view buttons play / pause for controls
-     $('.play').click(function() {
-     audioElement.play();
-     });
-     $('.pause').click(function() {
-     audioElement.pause();
-     });
-     */
-
-  }
-};
 //----------------------------------------------------------------------------
 
-var arc = d3.svg.arc()
+var arc = d3.svg.arc()  // base arc of each arc
     .innerRadius(20)
     .outerRadius(70)
     .startAngle(function(d){ return (d + game_status.base_rotation) * (Math.PI/180)}) //converting from degs to radians
     .endAngle(function(d){ return (d + game_status.base_rotation + 120) * (Math.PI/180)})
 
-var innerArc = d3.svg.arc()
+var innerArc = d3.svg.arc()   // inner circle
     .innerRadius(20)
     .outerRadius(function(d){ return d/100 * 50 + 20;})
     .startAngle(function(d,i){ return (i*120 + game_status.base_rotation) * (Math.PI/180)}) //converting from degs to radians
@@ -95,13 +82,20 @@ function changeArc(svg){
     .attr("d", arc);
   svg.selectAll(".inner-arcs")
     .attr("d", innerArc);
+  d3.select("#cannon").attr("transform","rotate("+cannonAttr.crotation%360+" 250 250)");
+
+  ld = (cannonAttr.crotation%360)+180;
+
+  if(typeof $(".laser") !== 'undefined') 
+  {
+    d3.select(".laser")
+      .attr("transform","rotate("+ld+" 250 250)");
+  }
+
 }
-
-
 
 function tickTween(d,i){
   return function(t){
-    //console.log();
     var element = d3.select(this);
     element.attr("T",t);
     d.x = element.attr("cx");
@@ -119,7 +113,7 @@ function tickTween(d,i){
             element.attr("fill-opacity","100%").transition().duration(100).attr("r",0).attr("fill-opacity","50%").remove();
           }else{
             var h_update = [0,0,0];
-            h_update[section] =- d.r;
+            h_update[section] -= d.r;
             updateHealth(h_update);
             element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
           }
@@ -132,10 +126,10 @@ function tickTween(d,i){
   }
 }
 
-function generateDots(svg){
+/*function generateDots(svg){
   enemies =[
     generatePointOnCircle(Math.round(Math.random()*360),width)
-  ];
+  ]
 
   $(enemies).each(function(i,d){
     d.r = Math.round(Math.random()*10)+5;
@@ -151,14 +145,14 @@ function generateDots(svg){
     .attr("cy", function(d,i){ return d.y; } )
     .attr("fill",function(d,i){ return color(d.type);} )
     .attr("AT",5000) //set at time tracker for game pause;
-  .transition().duration(5000).ease("linear")
+    .transition().duration(5000).ease("linear")
     .tween("assignment", tickTween)
     .attr("cx", width/2)
     .attr("cy", height/2)
     .remove();
-}
+}*/
 
-function generateShield(svg){
+/*function generateShield(svg){
   svg.selectAll(".shield").data([10]).enter().append("path")
     .attr("d",shieldArc)
     .attr("fill","white")
@@ -168,9 +162,9 @@ function generateShield(svg){
     .transition().duration(1000)
     .attr("d",shieldArc.outerRadius(70))
     .remove();
-}
+}*/
 
-function generateDefenders(svg){
+/*function generateDefenders(svg){
   var distance = 85;
   
   svg.selectAll(".defender").data(defenders).enter().append("circle")
@@ -192,7 +186,7 @@ function generateDefenders(svg){
         return (p.y + height/2);
       }
     }).remove();
-}
+}*/
 
 function generatePointOnCircle(angle,r){//in degree
   var rads = angle/180*Math.PI;
@@ -220,12 +214,14 @@ function startGame(){
   svg.select("#state_indicator").remove();
   enemyGeneration = setInterval(function(){
 
-    var patterns = [ singleColorDotsOpposite, singleColorDotsConsecutive ];
-    //var patterns = [ singleColorDotsOpposite, singleColorDotsOpposite , singleColorDotsOpposite];
+    // var patterns = [ singleColorDotsOpposite, singleColorDotsConsecutive ];
+    var patterns = [ singleColorDots];
     var e = patterns[Math.floor(Math.random()*patterns.length)]();
+    
 
     svg.selectAll(".empty").data(e).enter().append("circle")
     .attr("class","enemy")
+    .attr("id",function(d){return d.angle;})
     .attr("r",function(d,i){ return d.r; })
     .attr("cx", function(d,i){ return d.x; } )
     .attr("cy", function(d,i){ return d.y; } )
@@ -395,16 +391,38 @@ function updateScore(score){
 //-------------------------------patterns----------
 //single color - three dots 
 function singleColorDots(){
-  var n =  3;
+  var n =  1;
   var t = Math.floor(Math.random()*3);
   var base_point  = generatePointOnCircle(Math.round(Math.random()*360),width);
   var enemies = [];
+
+  var temp_angle = (Math.atan2(Math.abs(base_point.y),Math.abs(base_point.x)))*(180/Math.PI);
+  var final_angle;
+
+  if(base_point.x < 0 && base_point.y > 0)
+  {
+    final_angle = (90-temp_angle)+270;
+  }
+  else if(base_point.x > 0 && base_point.y > 0)
+  {
+    final_angle = temp_angle+180;
+  }
+  else if(base_point.x > 0 && base_point.y < 0)
+  {
+    final_angle = (90-temp_angle)+90;
+  }
+  else if(base_point.x < 0 && base_point.y < 0)
+  {
+    final_angle = temp_angle;
+  }
+
   for (i = 0; i<n ; i++){
 
     enemies.push(
       {
         x: base_point.x + Math.random()*50,
         y: base_point.y + Math.random()*50,
+        angle: final_angle,
         type: t
       }
     );
@@ -417,7 +435,9 @@ function singleColorDots(){
     d.delay = function(d,i){return Math.random()*1000;}
   });
 
-  return enemies
+  console.log("base "+base_point.x,base_point.y);
+  console.log("enemies "+enemies[0].x, enemies[0].y, enemies[0].angle);
+  return enemies;
 }
 //single color - consective
 function singleColorDotsConsecutive(){
@@ -457,11 +477,33 @@ function singleColorDotsOpposite(){
   var t = Math.floor(Math.random()*3);
   var base_point  = generatePointOnCircle(Math.round(Math.random()*360),width);
   var enemies = [];
+
+  var temp_angle = (Math.atan2(Math.abs(base_point.y),Math.abs(base_point.x)))*(180/Math.PI);
+  var final_angle;
+
+  if(base_point.x < 0 && base_point.y > 0)
+  {
+    final_angle = (90-temp_angle)+270;
+  }
+  else if(base_point.x > 0 && base_point.y > 0)
+  {
+    final_angle = temp_angle+180;
+  }
+  else if(base_point.x > 0 && base_point.y < 0)
+  {
+    final_angle = (90-temp_angle)+90;
+  }
+  else if(base_point.x < 0 && base_point.y < 0)
+  {
+    final_angle = temp_angle;
+  }
+
   for (i = 0; i<n ; i++){
     enemies.push(
       {
         x: base_point.x + Math.random()*50,
         y: base_point.y + Math.random()*50,
+        angle: final_angle,
         type: t,
         delay:function(d,i){return i*1000;}
       }
@@ -479,8 +521,9 @@ function singleColorDotsOpposite(){
       d.y = (height/2-d.y);
      
     }
-    //d.type = Math.floor(Math.random()*3)
+    // d.type = Math.floor(Math.random()*3);
   });
+  // console.log("sa "+Math.round(Math.random()*360));
 
   return enemies;
 
@@ -500,6 +543,7 @@ function setup(){
   game_status.progress = 0;
   game_status.multiplier = 1;
   enemies = [];
+  cannonAttr.crotation = 90;
 
   svg = d3.select("body")
     .append("svg")
@@ -535,42 +579,90 @@ function setup(){
     .attr("fill-opacity", "60%");
  
   d3.select("body")
-    .on("keydown", function(){
-      if(d3.event.keyCode == 37){//press left
+    .on("keydown", function()
+    {
+      if(d3.event.keyCode == 37) //press left
+      {
         control_status.rotate = 1;
       }
-      else if(d3.event.keyCode == 39){//press right
+      else if(d3.event.keyCode == 39)//press right
+      {
         control_status.rotate = -1;
       }
-      else if(d3.event.keyCode == 32){//press space
-        if(game_status.state == 0){
+      else if(d3.event.keyCode == 32) //press space
+      {
+        if(game_status.state == 0)
+        {
           setGameState(1);
         }
-        else if(game_status.state == 1){
+        else if(game_status.state == 1)
+        {
           setGameState(2);
         }
-        else if(game_status.state == 2){
+        else if(game_status.state == 2)
+        {
           setGameState(1);
         }
-        else if(game_status.state == 3){
+        else if(game_status.state == 3)
+        {
           clearInterval(controlInterval);
           svg.remove();
           setup();
         }
-        
+      }
+      else if(d3.event.keyCode == 8) //press backspace
+      {
+          if(typeof $(".laser") !== 'undefined') 
+          {
+            $(".laser").remove();
+          }
+
+          var enemy = $(".enemy");
+
+          var laserFire = svg.append("rect")
+                              .attr("class","laser")
+                              .attr("x","250")
+                              .attr("y","250")
+                              .attr("width","350")
+                              .attr("height","1")
+                              .attr("fill","white")
+                              .attr("stroke","white")
+                              .attr("transform","rotate("+ld+" 250 250)");
+
+
+
+          d3.select("body").on("keyup",function(){
+               if(typeof $(".laser") !== 'undefined') {
+                $(".laser").remove();
+              }
+
+              if(d3.event.keyCode == 37){
+                control_status.rotate = 0;
+              }
+              else if(d3.event.keyCode == 39){
+                control_status.rotate = 0;
+              }
+            });
+
+          if(enemy.attr("id") > (cannonAttr.crotation%360)-((enemy.attr("r")/2)+4) && enemy.attr("id") < (cannonAttr.crotation%360)+((enemy.attr("r")/2)+4))
+          {
+            enemy.remove();
+          }
+          // console.log("cannon "+cannonAttr.crotation%360);
+
+
       }
       else if(d3.event.keyCode == 13) { //press enter
 
         if(typeof $(".line") !== 'undefined') {
           $(".line").remove();
         }
-        //pure js except jquery, last have issue and transform 'D' attribute in lowercase
-        var enemy = document.getElementsByClassName("enemy")[0];
+        var enemy = $("circle").first();
         /*
-        * show line
+        * get first circle coordinates
         * */
-        var enemyCx = enemy.cx.baseVal.value;
-        var enemyCy = enemy.cy.baseVal.value;
+        var enemyCx = enemy.attr("cx");
+        var enemyCy = enemy.attr("cy");
 
         var lineData = [ {"x": 250, "y": 255},
                          {"x": enemyCx, "y": enemyCy}];
@@ -586,24 +678,21 @@ function setup(){
                                 .attr("stroke", "red")
                                 .attr("stroke-width", 2)
                                 .attr("fill", "none");
-        /* end of line logic */
 
-        enemy.setAttribute("D", true); // ask this in comment (103 str of this code)
 
-        var element = d3.select('circle'); //d3 selector for explosion and removing element
+        // it cheat with health...
+        if(enemy.attr("fill") === '#1f77b4') {
+          game_status.health[0] +=parseInt(enemy.attr("r"));
+        }
+        if(enemy.attr("fill") === '#aec7e8') {
+          game_status.health[1] +=parseInt(enemy.attr("r"));
+        }
+        if(enemy.attr("fill") === '#ff7f0e') {
+          game_status.health[2] +=parseInt(enemy.attr("r"));
+        }
 
-        // explosion animation and remove element
-        element.attr("fill-opacity","100%").transition().duration(100).attr("r",15).attr("fill-opacity","50%").remove();
-        playSound.go();
+        enemy.remove();
 
-        // get enemy radius and increase score
-        var radius = $('circle').first().attr('r');
-        game_status.score += (radius*game_status.multiplier);
-        updateScore(radius);
-
-        /*
-        * this part remove line after shot.
-        * */
         d3.select("body").on("keyup",function(){
              if(typeof $(".line") !== 'undefined') {
               $(".line").remove();
@@ -616,11 +705,10 @@ function setup(){
               control_status.rotate = 0;
             }
           });
-          
       }
       
     })
-    .on("keyup", function(){
+   .on("keyup", function(){
       if(d3.event.keyCode == 37){
         control_status.rotate = 0;
       }
@@ -628,6 +716,7 @@ function setup(){
         control_status.rotate = 0;
       }
     });
+
 
   //data is offsets
   svg.selectAll(".arcs").data([0,120,240]).enter().append("path")
@@ -653,6 +742,15 @@ function setup(){
     .attr("fill","white")
     .text("x 1");
 
+
+  var cannon = svg.append("ellipse")
+    .attr("id","cannon")
+    .attr("cx",cannonAttr.cx)
+    .attr("cy",cannonAttr.cy)
+    .attr("rx",cannonAttr.rx)
+    .attr("ry",cannonAttr.ry)
+    .attr("fill","gray");
+
   controlInterval = setInterval(function(){
     //if(gameState == )
     if(game_status.state == 1){
@@ -660,10 +758,12 @@ function setup(){
       //do nothing
       }
       else if(control_status.rotate > 0){
-        game_status.base_rotation -= 10;
+        game_status.base_rotation -= 4;
+        cannonAttr.crotation -= 4;
       }
       else if(control_status.rotate < 0){
-        game_status.base_rotation += 10;
+        game_status.base_rotation += 4;
+        cannonAttr.crotation += 4;
       }
     }
 
