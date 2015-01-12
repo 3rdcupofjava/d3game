@@ -10,10 +10,11 @@ var height = 500;   // Border height
     pattern_interval = 6000;
     enemyCount = 0;
     index = 0;
+          var x = 0;
     
 var finalData = []; //the data to be appended to the enemy
     strData = "Iamgoodandyoutoo";
-    input = null;     //data storage for user input
+    input = [];     //data storage for user input
   
 var enemyGeneration = -1;
 var controlInterval = -1;
@@ -223,11 +224,12 @@ function startGame(){
 
     //append the enemies
     svg.selectAll(".empty").data(e).enter()
-      .append("svg")
-      .attr("class",function(d,i){return "enemy_holder "+finalData[i];})
-      .attr("id",function(d){return "enemy_holder_"+d.angle;})
+      // .append("svg")
+      // .attr("class",function(d,i){return "enemy_holder "+finalData[i];})
+      // .attr("id",function(d){return "enemy_holder_"+d.angle;})
       .append("circle")
-      .attr("class","enemy")
+      .attr("class",function(d,i){return "enemy "+finalData[i];})
+      .attr("status","target")
       .attr("id",function(d){return d.angle;})
       .attr("r",function(d,i){ return d.r; })
       .attr("cx", function(d,i){ return d.x; } )
@@ -242,11 +244,12 @@ function startGame(){
 
     // append some character to every enemy
     svg.selectAll(".empty").data(e).enter()
-      .append("svg")
-      .attr("class",function(d,i){return "text_holder "+finalData[i];})
-      .attr("id",function(d){return "text_holder_"+d.angle;})
+      // .append("svg")
+      // .attr("class",function(d,i){return "text_holder "+finalData[i];})
+      // .attr("id",function(d){return "text_holder_"+d.angle;})
       .append("text")
       .attr("class",function(d,i){ return "enemyChar "+finalData[i]+" "+d.angle;})
+      .attr("status","target")
       .attr("id",function(d){return "text_"+d.angle;})
       .attr("x",function(d){return d.x;})
       .attr("y",function(d){return d.y-d.r;})
@@ -788,8 +791,8 @@ function setup(){
         }
         else if(d3.event.keyCode == 8) //press backspace (Cannon fires)
         {     
-          $("svg").focus();
           playSound.go();
+          d3.select("#cannon").attr("fill","rgba(150,0,0,0.8)"); 
           if(typeof $(".laser") !== 'undefined') 
           {
             $(".laser").remove();
@@ -818,6 +821,7 @@ function setup(){
               else if(d3.event.keyCode == 39){
                 control_status.rotate = 0;
               }
+              d3.select("#cannon").transition().attr("fill","gray");
             });
 
 
@@ -864,51 +868,59 @@ function setup(){
           if(typeof $(".line") !== 'undefined') {
             $(".line").remove();
           }
-          var enemy = $("circle").first();
-          /*
-          * get first circle coordinates
-          * */
-          var enemyCx = enemy.attr("cx");
-          var enemyCy = enemy.attr("cy");
-
-          var lineData = [ {"x": 250, "y": 250},
-                           {"x": enemyCx, "y": enemyCy}];
-
-          var lineFunction = d3.svg.line()
-                                  .x(function(d) { return d.x; })
-                                  .y(function(d) { return d.y; })
-                                  .interpolate("linear");
-
-          var lineGraph = svg.append("path")
-                                  .attr("class", "line")
-                                  .attr("d", lineFunction(lineData))
-                                  .attr("stroke", "red")
-                                  .attr("stroke-width", 2)
-                                  .attr("fill", "none");
-
-
-          // it cheat with health...
-          if(enemy.attr("fill") === '#1f77b4') {
-            game_status.health[0] +=parseInt(enemy.attr("r"));
-          }
-          if(enemy.attr("fill") === '#aec7e8') {
-            game_status.health[1] +=parseInt(enemy.attr("r"));
-          }
-          if(enemy.attr("fill") === '#ff7f0e') {
-            game_status.health[2] +=parseInt(enemy.attr("r"));
-          }
-
-          for(var i=0; i<$("text.enemyChar").length; i++)
+  
+          var length = $("circle.enemy[status=targeted]").length;
+          x = 0;
+  
+          while(x < length)
           {
-            var cId = "text_"+enemy.attr("id");
-            if(cId == $("text.enemyChar")[i].id)
-            {
-              $("text.enemyChar")[i].remove();
+            var enemy = $("circle.enemy[status=targeted]").first();
+            /*
+            * get first circle coordinates
+            * */
+            var enemyCx = enemy.attr("cx");
+            var enemyCy = enemy.attr("cy");
+
+            var lineData = [ {"x": 250, "y": 250},
+                             {"x": enemyCx, "y": enemyCy}];
+
+            var lineFunction = d3.svg.line()
+                                    .x(function(d) { return d.x; })
+                                    .y(function(d) { return d.y; })
+                                    .interpolate("linear");
+
+            var lineGraph = svg.append("path")
+                                    .attr("class", "line")
+                                    .attr("d", lineFunction(lineData))
+                                    .attr("stroke", "red")
+                                    .attr("stroke-width", 2)
+                                    .attr("fill", "none");
+
+            // it cheat with health...
+            if(enemy.attr("fill") === '#1f77b4') {
+              game_status.health[0] +=parseInt(enemy.attr("r"));
             }
-          }
-          enemy.remove(); //remove the enemy
-          $("svg.enemy_holder").first().remove();
-          $("svg.text_holder").first().remove();
+            if(enemy.attr("fill") === '#aec7e8') {
+              game_status.health[1] +=parseInt(enemy.attr("r"));
+            }
+            if(enemy.attr("fill") === '#ff7f0e') {
+              game_status.health[2] +=parseInt(enemy.attr("r"));
+            }
+
+            for(var i=0; i<$("text.enemyChar").length; i++)
+            {
+              var cId = "text_"+enemy.attr("id");
+              if(cId == $("text.enemyChar")[i].id)
+              {
+                $("text.enemyChar")[i].remove();
+              }
+            }
+            enemy.remove();
+            // $("svg.enemy_holder").first().remove();
+            // $("svg.text_holder").first().remove();
+            x++;
+          }//end of while
+          input = []; //clear the input    
 
           d3.select("body").on("keyup",function(){
                if(typeof $(".line") !== 'undefined') {
@@ -922,6 +934,7 @@ function setup(){
                 control_status.rotate = 0;
               }
             });
+          
         }
       }
       
